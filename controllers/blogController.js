@@ -53,7 +53,7 @@ const createBlog = async (req, res) => {
 const getAllblog = async (req, res) => {
 
   try {
-    const Blogs = await Blog.find().populate("user_id", "name")
+    const Blogs = await Blog.find().sort({createdAt: -1}).populate("user_id", "name")
     res.status(200).json(Blogs)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -161,7 +161,7 @@ const blogByUser = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" })
     }
-    const blogs = await Blog.find({ user_id: userId }).populate("user_id", "name")
+    const blogs = await Blog.find({ user_id: userId }).sort({createdAt:-1}).populate("user_id", "name")
     if (!blogs) {
       return res.status(401).json({ error: "You have no blogs" })
     }
