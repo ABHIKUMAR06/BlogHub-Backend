@@ -1,0 +1,10 @@
+const express = require("express")
+const router = express.Router()
+const { createUser, loginUser, logoutUser, updateUser, getMyProfile } = require("../controllers/userControllers.js")
+const authMiddleware = require("../middlewares/authMiddleware.js")
+router.get("/profile", authMiddleware, getMyProfile)
+router.post("/reg", createUser)
+router.put("/update", authMiddleware, updateUser)
+router.post("/login", loginUser)
+router.post("/logout", authMiddleware, logoutUser)
+module.exports = router
