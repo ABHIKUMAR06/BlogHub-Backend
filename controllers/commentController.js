@@ -53,7 +53,7 @@ const getCommentsByBlog = async (req, res) => {
       .sort({ createdAt: 1 })
       .lean();
 
-
+    
 
     if (!comments || comments.length === 0) {
       return res.status(200).json([]);
@@ -149,31 +149,39 @@ const updateComment = async (req, res) => {
 
 
 const deleteComment = async (req, res) => {
-
   try {
-    const userId = req.userId
-
+    const userId = req.userId;
     const { id } = req.params;
+
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized: User not logged in" });
     }
 
-    const deletecomment = await Comment.findById(id);
-
-    if (!deletecomment) {
+    const comment = await Comment.findById(id);
+    if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
     }
-    if (deletecomment.user_id?._id.toString() !== userId.toString()) {
+
+    if (comment.user_id?.toString() !== userId.toString()) {
       return res.status(403).json({ error: "Forbidden: You can only delete your own comment" });
     }
-    await Comment.deleteMany({ parent_comment_id: id })
 
-    await Comment.findByIdAndDelete(id);
-    res.json({ message: "comment deleted successfully" });
+    const deleteWithChildren = async (commentId) => {
+      const children = await Comment.find({ parent_comment_id: commentId });
+      for (const child of children) {
+        await deleteWithChildren(child._id); 
+      }
+      await Comment.findByIdAndDelete(commentId);
+    };
+
+    await deleteWithChildren(id);
+
+    res.json({ message: "Comment and all its replies deleted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 module.exports = { createComment, getCommentsByBlog, deleteComment, updateComment };

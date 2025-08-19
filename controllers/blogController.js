@@ -1,6 +1,7 @@
 
 const Comment = require("../models/commentModel.js")
 const Blog = require("../models/blogModel.js");
+const Like = require("../models/likeModel.js")
 const { uploadToCloudinary, deleteFromCloudinary } = require('../utills/cloudinary');
 
 const createBlog = async (req, res) => {
@@ -131,7 +132,7 @@ const deleteblog = async (req, res) => {
     }
 
     await Comment.deleteMany({ blog_id: id });
-
+     await Like.deleteMany ({blog_id:id})
     if (blog.img_url) {
       const url = blog.img_url;
       const publicId = url.split("/upload/")[1].replace(/\.\w+$/, "");
