@@ -13,7 +13,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/api/user", UserRouter)
 app.use("/api/blog", blogRouter)
 app.use("/api/comment", commentRouter)
-mongoose.connect("mongodb://localhost:27017/l")
+
+mongoose.connect(process.env.DB_STRING)
     .then(
         console.log("db conected")
     ).catch((err) => {
