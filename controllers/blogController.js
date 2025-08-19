@@ -1,5 +1,4 @@
 
-const jwt = require("jsonwebtoken");
 const Comment = require("../models/commentModel.js")
 const Blog = require("../models/blogModel.js");
 const { uploadToCloudinary, deleteFromCloudinary } = require('../utills/cloudinary');
@@ -56,7 +55,7 @@ const getAllblog = async (req, res) => {
     const Blogs = await Blog.find().sort({createdAt: -1}).populate("user_id", "name")
     res.status(200).json(Blogs)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ message: err.message })
 
   }
 }
@@ -112,19 +111,15 @@ const updateBlog = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
-
 const deleteblog = async (req, res) => {
   try {
-    const userId = req.userId
+    const userId = req.userId;
     const { id } = req.params;
 
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized: User not logged in" });
     }
-    const comment = await Comment.findOne({ blog_id: id })
-    if (comment) {
-      await Comment.findByIdAndDelete(comment._id)
-    }
+
     const blog = await Blog.findById(id);
 
     if (!blog) {
@@ -134,24 +129,24 @@ const deleteblog = async (req, res) => {
     if (blog.user_id.toString() !== userId.toString()) {
       return res.status(403).json({ error: "Forbidden: You can only delete your own blogs" });
     }
-    const url = blog.img_url;
 
-    const afterUpload = url.split("/upload/")[1];
+    await Comment.deleteMany({ blog_id: id });
 
-    const withoutVersion = afterUpload.split("/").slice(1).join("/");
+    if (blog.img_url) {
+      const url = blog.img_url;
+      const publicId = url.split("/upload/")[1].replace(/\.\w+$/, "");
+      await deleteFromCloudinary(publicId);
+    }
 
-    const publicId = withoutVersion.split(".")[0];
-
-
-    await deleteFromCloudinary(publicId);
     await Blog.findByIdAndDelete(id);
-    res.json({ message: "Blog deleted successfully" });
 
+    res.status(200).json({ message: "Blog deleted successfully", blogId: id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 const blogByUser = async (req, res) => {
   try {
