@@ -4,6 +4,7 @@ const Blog = require("../models/blogModel.js");
 const { uploadToCloudinary, deleteFromCloudinary } = require('../utills/cloudinary');
 
 const createBlog = async (req, res) => {
+  try {
   const { title, detail } = req.body;
 
   if (!title || !detail) {
@@ -15,7 +16,6 @@ const createBlog = async (req, res) => {
   }
 
 
-  try {
 
     const userId = req.userId
 
@@ -43,8 +43,8 @@ const createBlog = async (req, res) => {
       blog: savedBlog,
     });
 
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
+  } catch (err) {
+    return res.status(500).json({ error:"Error",message: err.message });
   }
 };
 
